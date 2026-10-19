@@ -94,7 +94,8 @@ type EditorState = {
 
   placePrompt: (p: { point?: Point; box?: Box }) => Promise<void>
   removeLastPrompt: () => Promise<void>
-  removePoint: (index: number) => Promise<void>
+  /** Remove one point (of the active object, or of `objectId`, which then becomes active). */
+  removePoint: (index: number, objectId?: number) => Promise<void>
   removeObject: (id: number) => Promise<void>
   setLabel: (id: number, label: string) => void
   setShrink: (id: number, shrink: number) => void
@@ -339,23 +340,34 @@ export const useEditor = create<EditorState>((set, get) => {
       else await get().removeObject(active.id)
     },
 
-    removePoint: async (index) => {
+    removePoint: async (index, objectId) => {
       const st = get()
-      const active = st.objects.find((o) => o.id === st.activeId)
-      if (!active || st.busy || !st.image) return
-      const points = active.points.filter((_, i) => i !== index)
-      if (!points.length && !active.box) {
-        await get().removeObject(active.id)
+      const target = st.objects.find((o) => o.id === (objectId ?? st.activeId))
+      if (!target || st.busy || !st.image) return
+      if (target.id !== st.activeId) set({ activeId: target.id })
+      const points = target.points.filter((_, i) => i !== index)
+      if (!points.length && !target.box) {
+        await get().removeObject(target.id)
+        ws().toast('info', 'That was the last point, so the object was removed.')
         return
       }
-      if (points.length && !points.some((p) => p.label === 1) && !active.box) {
+      if (points.length && !points.some((p) => p.label === 1) && !target.box) {
         ws().toast('info', 'An object needs at least one include point (or a box).')
         return
       }
+      if (target.edited) {
+        const ok = await ws().confirm({
+          title: 'Redo this object?',
+          body: 'Removing a point re-runs the segmentation and discards your brush edits on this object.',
+          okLabel: 'Redo object',
+          danger: true,
+        })
+        if (!ok) return
+      }
       set({ busy: true })
       try {
-        const r = await guarded((k) => updatePrompts(k, active.id, points, active.box))
-        if (r) replace(await hydrate(r.object, st.image.width, st.image.height, active))
+        const r = await guarded((k) => updatePrompts(k, target.id, points, target.box))
+        if (r) replace(await hydrate(r.object, st.image.width, st.image.height, target))
       } catch (e) {
         reportError(e)
       } finally {

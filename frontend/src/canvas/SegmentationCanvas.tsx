@@ -145,11 +145,18 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
       list.forEach((o, i) => drawBadge(ctx, o, i, ed.activeId === o.id, region, t, ap.maskColor))
     }
 
-    // prompts of the active object
-    const active = list.find((o) => o.id === ed.activeId)
-    if (active && ed.tool !== 'brush') {
-      if (active.box) drawBox(ctx, active.box, region, t, '#ffffff', false)
-      for (const p of active.points) drawPoint(ctx, (p.x + 0.5 - region.x0) * t.scale + t.ox, (p.y + 0.5 - region.y0) * t.scale + t.oy, p.label === 1)
+    // Points and boxes of every object stay visible so any of them can be removed; the active one is drawn last and larger.
+    if (ed.tool !== 'brush') {
+      const toDisplay = (x: number, y: number) => ({ x: (x - region.x0) * t.scale + t.ox, y: (y - region.y0) * t.scale + t.oy })
+      const ordered = [...list.filter((o) => o.id !== ed.activeId), ...list.filter((o) => o.id === ed.activeId)]
+      for (const o of ordered) {
+        const isActive = o.id === ed.activeId
+        if (o.box) drawBox(ctx, o.box, region, t, isActive ? '#ffffff' : 'rgba(255,255,255,0.6)', false, isActive ? 2 : 1.5)
+        for (const q of o.points) {
+          const c = toDisplay(q.x + 0.5, q.y + 0.5)
+          drawPoint(ctx, c.x, c.y, q.label === 1, isActive)
+        }
+      }
     }
     const drag = dragRef.current
     if (drag) drawBox(ctx, { x0: drag.x0, y0: drag.y0, x1: drag.x1, y1: drag.y1 }, region, t, '#4eb8d9', true)
@@ -322,10 +329,12 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
 
     if (ed.tool === 'point') {
       if (busy || !inside(p)) return
-      if (activeObj) {
-        const hit = activeObj.points.findIndex((q) => Math.hypot((q.x + 0.5 - p.x) * p.scale, (q.y + 0.5 - p.y) * p.scale) <= POINT_HIT_PX)
+      // A click on any object's dot removes that point (the active object's dots win when they overlap).
+      const byPriority = [...ed.objects.filter((o) => o.id === ed.activeId), ...ed.objects.filter((o) => o.id !== ed.activeId)]
+      for (const o of byPriority) {
+        const hit = o.points.findIndex((q) => Math.hypot((q.x + 0.5 - p.x) * p.scale, (q.y + 0.5 - p.y) * p.scale) <= POINT_HIT_PX)
         if (hit >= 0) {
-          void ed.removePoint(hit)
+          void ed.removePoint(hit, o.id)
           return
         }
       }
@@ -477,7 +486,7 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
         <div className="canvas-hint">
           {tool === 'point' &&
             (active
-              ? `Refining object ${activeNumber} — click to include, right-click to exclude. Press N for a new object.`
+              ? `Refining object ${activeNumber} — click to include, right-click to exclude, click a dot to remove it. Press N for a new object.`
               : 'Click on an object to outline it.')}
           {tool === 'box' && 'Drag a box around an object.'}
           {tool === 'select' && 'Click an object to select it.'}
@@ -485,15 +494,17 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
         </div>
       )}
       {image && focusId == null && !loading && (
-        <div className="canvas-rotate" role="group" aria-label="Rotate this image">
-          <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(270)} title="Rotate this image left (Shift+R)" aria-label="Rotate left">
-            <IconRotateLeft />
-          </button>
-          <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(90)} title="Rotate this image right (R)" aria-label="Rotate right">
-            <IconRotateRight />
-          </button>
+        <div className="canvas-rotate-wrap">
+          <div className="canvas-rotate" role="group" aria-label="Rotate this image">
+            <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(270)} title="Rotate this image left (Shift+R)" aria-label="Rotate left">
+              <IconRotateLeft />
+            </button>
+            <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(90)} title="Rotate this image right (R)" aria-label="Rotate right">
+              <IconRotateRight />
+            </button>
+          </div>
           {image.rotation !== 0 && (
-            <button type="button" className="chip" disabled={busy} onClick={() => void rotate((360 - image.rotation) as 90 | 180 | 270)} title="Undo this image's rotation">
+            <button type="button" className="chip rotated-chip" disabled={busy} onClick={() => void rotate((360 - image.rotation) as 90 | 180 | 270)} title="Undo this image's rotation">
               Rotated {image.rotation}° · reset
             </button>
           )}
@@ -508,9 +519,11 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
 
 type T = { ox: number; oy: number; scale: number }
 
-function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, include: boolean) {
+function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, include: boolean, active = true) {
+  const r = active ? 8 : 6
+  ctx.globalAlpha = active ? 1 : 0.85
   ctx.beginPath()
-  ctx.arc(x, y, 8, 0, Math.PI * 2)
+  ctx.arc(x, y, r, 0, Math.PI * 2)
   ctx.fillStyle = include ? 'rgba(40,200,110,0.95)' : 'rgba(235,70,70,0.95)'
   ctx.fill()
   ctx.strokeStyle = '#fff'
@@ -519,16 +532,18 @@ function drawPoint(ctx: CanvasRenderingContext2D, x: number, y: number, include:
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 2
   ctx.beginPath()
-  ctx.moveTo(x - 4, y)
-  ctx.lineTo(x + 4, y)
+  const k = active ? 4 : 3
+  ctx.moveTo(x - k, y)
+  ctx.lineTo(x + k, y)
   if (include) {
-    ctx.moveTo(x, y - 4)
-    ctx.lineTo(x, y + 4)
+    ctx.moveTo(x, y - k)
+    ctx.lineTo(x, y + k)
   }
   ctx.stroke()
+  ctx.globalAlpha = 1
 }
 
-function drawBox(ctx: CanvasRenderingContext2D, b: { x0: number; y0: number; x1: number; y1: number }, region: Region, t: T, color: string, dashed: boolean) {
+function drawBox(ctx: CanvasRenderingContext2D, b: { x0: number; y0: number; x1: number; y1: number }, region: Region, t: T, color: string, dashed: boolean, width = 2) {
   const x = (Math.min(b.x0, b.x1) - region.x0) * t.scale + t.ox
   const y = (Math.min(b.y0, b.y1) - region.y0) * t.scale + t.oy
   const w = Math.abs(b.x1 - b.x0) * t.scale
@@ -539,15 +554,26 @@ function drawBox(ctx: CanvasRenderingContext2D, b: { x0: number; y0: number; x1:
   ctx.lineWidth = 4
   ctx.strokeRect(x, y, w, h)
   ctx.strokeStyle = color
-  ctx.lineWidth = 2
+  ctx.lineWidth = width
   ctx.strokeRect(x, y, w, h)
   ctx.restore()
 }
 
 function drawBadge(ctx: CanvasRenderingContext2D, o: EditObject, index: number, isActive: boolean, region: Region, t: T, baseColor: string) {
-  if (!o.centroid) return
-  const x = (o.centroid.x - region.x0) * t.scale + t.ox
-  const y = (o.centroid.y - region.y0) * t.scale + t.oy
+  // Label sits just above the object (like a detection label) so it never covers the object's dots.
+  const bounds = overlayBounds(o.id)
+  let x: number
+  let y: number
+  if (bounds) {
+    x = ((bounds.x0 + bounds.x1) / 2 - region.x0) * t.scale + t.ox
+    y = (bounds.y0 - region.y0) * t.scale + t.oy - 14
+    if (y < 14) y = (bounds.y0 - region.y0) * t.scale + t.oy + 14 // no room above: tuck inside the top edge
+  } else if (o.centroid) {
+    x = (o.centroid.x - region.x0) * t.scale + t.ox
+    y = (o.centroid.y - region.y0) * t.scale + t.oy
+  } else {
+    return
+  }
   const [r, g, b] = objectColor(baseColor, index)
   const text = o.label || String(index + 1)
   ctx.font = '600 12px "IBM Plex Sans", system-ui, sans-serif'

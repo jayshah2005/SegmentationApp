@@ -77,7 +77,7 @@ If you ever delete the model file or change to a model you have not downloaded, 
 
 ## 3. A tour of the screen
 
-![The workspace](images/06-workspace.jpg)
+![The workspace: a hyperspectral capture with five outlined leaves](images/06-workspace.jpg)
 
 | Area | What it does |
 |---|---|
@@ -106,7 +106,7 @@ Each thing you want to cut out is an **object**. You tell the app *where it is* 
 - **Left-click** on an object — it is outlined and becomes the *active object* (highlighted card, white label).
 - **Left-click** on a part that was missed — it is added.
 - **Right-click** (or **Shift + click**) on a part that was wrongly included — it is excluded. Excluded points are red, included points green.
-- **Click a dot** to remove that point again.
+- **Click a dot** to remove that point again. The dots of *every* object stay visible, even when the object is not selected, and clicking any of them removes it (that object becomes the active one). Removing an object's last point deletes the object.
 - **Backspace** removes the most recent point.
 
 While an object is active, clicks *refine that object*. To outline a **different** object, either press **N** (new object) or just click on the other object — if you click well away from the active object, the app starts a new one for you and tells you so.
@@ -135,7 +135,7 @@ Click **Fine-tune** on a card for a close-up. Everything outside the object is d
 
 ### Rotating one image
 
-If an image is sideways or upside down, use the two arrow buttons at the top-right of the picture (or press **R** to turn it right and **Shift + R** to turn it left). Objects, points and boxes you already made turn with the picture. The choice is remembered for that image only, even after you close the app, and a **Rotated 90° · reset** button appears so you can undo it. Saved cut-outs use the orientation you see.
+If an image is sideways or upside down, use the two arrow buttons at the top-right of the picture (or press **R** to turn it right and **Shift + R** to turn it left). Objects, points and boxes you already made turn with the picture. The choice is remembered for that image only, even after you close the app, and a **Rotated 90° · reset** button appears under the arrows so you can undo it. Saved cut-outs use the orientation you see.
 
 To rotate *every* image the same way, use Settings → Image display → *Rotate every image*. The two combine: the per-image rotation is added on top of the setting.
 
@@ -186,7 +186,7 @@ Cut-outs are always made from the **original-size** image even when the app show
 
 ## 6. Settings reference
 
-Open with the ⚙ button. Changes in *Folders*, *Image display* and *Export* take effect when you click **Save changes**; *Model & GPU* and *Appearance* apply immediately.
+Open with the ⚙ button. Changes in *Folders*, *Image display*, *Export* and *Appearance* take effect only when you click **Save changes** (**Cancel** discards them). *Model & GPU* is the exception: choosing a model or device, and installing things, happens immediately.
 
 ### Folders
 Input folder, output folder, and whether to include sub-folders. Changing the input folder re-scans for images.
@@ -213,11 +213,11 @@ Changing display settings re-opens the current image (unsaved objects are lost �
 
 - **File format of each cut-out** — *Same as the original* (recommended), or force PNG, TIFF, NumPy or ENVI. PNG for a spectral image saves only its colour preview, not the bands.
 - **Crop** — crop to the object (default) or keep the full image size.
-- **Mask picture**, **colour preview next to spectral files** — on by default.
+- **Mask picture**, **colour preview next to spectral files** — on by default. The preview's brightness is set from the object's own pixels, so a dark leaf next to a bright white reference tile still gives a readable picture; the spectral file itself is never changed.
 - **Table of objects** — CSV, COCO JSON (for machine-learning tools) or none.
 
 ### Appearance
-**Highlight colour** and **strength** control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files, so they apply instantly and are remembered in this browser — there is nothing to save.
+**Highlight colour** and **opacity** (30% by default; lower it to see more of the picture underneath) control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files. Like the other tabs they apply when you click **Save changes**, and are then remembered in this browser. (The **Brightness** slider in the top bar is a quick live control for the same brightness.)
 
 ### Shortcuts
 The list in [section 9](#9-keyboard-shortcuts).

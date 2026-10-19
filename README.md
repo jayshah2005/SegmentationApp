@@ -2,7 +2,9 @@
 
 **Click on an object, get a clean cut-out.** Segmentation Tool outlines objects in your images with a few clicks, using Meta's [SAM 2](https://github.com/facebookresearch/sam2) model. It works with ordinary photos *and* with multispectral and hyperspectral images, and it runs on your own computer — your images never leave it.
 
-![Outlining leaves in the workspace](docs/images/06-workspace.jpg)
+![Outlining five leaves in a 204-band hyperspectral capture](docs/images/06-workspace.jpg)
+
+*Five leaves outlined with one click each in a hyperspectral capture (shown as a colour picture).*
 
 ## What you can do
 
@@ -64,6 +66,8 @@ results/
 ```
 
 ![Exported cut-outs](docs/images/13-results.png)
+
+*The five leaves above as saved: each is a full 204-band ENVI file, plus the colour preview shown here (transparent background).*
 
 For spectral images each object is saved in the same format as the input (for example `object_001.hdr` + `object_001.img` for ENVI) plus `object_001_preview.png`. Everything about the output — format, cropping, masks, previews, CSV or COCO JSON — can be changed in **Settings → Export**.
 
