@@ -33,7 +33,7 @@ export type ConfirmRequest = {
 
 type Appearance = { maskColor: string; maskOpacity: number; exposure: number }
 const APPEARANCE_KEY = 'segtool.appearance'
-const DEFAULT_APPEARANCE: Appearance = { maskColor: '#3d9a6a', maskOpacity: 0.45, exposure: 1 }
+const DEFAULT_APPEARANCE: Appearance = { maskColor: '#3d9a6a', maskOpacity: 0.3, exposure: 1 }
 
 function loadAppearance(): Appearance {
   try {

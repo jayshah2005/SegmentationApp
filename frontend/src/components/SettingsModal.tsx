@@ -263,9 +263,9 @@ export function SettingsModal() {
               <p className="muted">The tint drawn over each outlined object. The first object uses this colour; the others shift its hue so neighbours are easy to tell apart.</p>
               <label className="slider-field">
                 <span>
-                  Highlight strength <strong>{Math.round(appearance.maskOpacity * 100)}%</strong>
+                  Highlight opacity <strong>{Math.round(appearance.maskOpacity * 100)}%</strong>
                 </span>
-                <input type="range" min={0.05} max={1} step={0.05} value={appearance.maskOpacity} onChange={(e) => useWorkspace.getState().setMaskOpacity(Number(e.target.value))} />
+                <input type="range" min={0.05} max={1} step={0.05} aria-label="Highlight opacity" value={appearance.maskOpacity} onChange={(e) => useWorkspace.getState().setMaskOpacity(Number(e.target.value))} />
               </label>
               <label className="slider-field">
                 <span>
