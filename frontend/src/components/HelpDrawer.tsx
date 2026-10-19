@@ -67,7 +67,7 @@ export function HelpDrawer() {
           <h3>Full manual</h3>
           <p>
             The complete guide with screenshots is <code>docs/MANUAL.md</code> in the app folder, or{' '}
-            <a href="https://github.com/jayshah2005/ManualSegmentationApp/blob/main/docs/MANUAL.md" target="_blank" rel="noreferrer">read it on GitHub</a>.
+            <a href="https://github.com/jayshah2005/SegmentationApp/blob/main/docs/MANUAL.md" target="_blank" rel="noreferrer">read it on GitHub</a>.
           </p>
 
           <h3>It feels slow?</h3>
