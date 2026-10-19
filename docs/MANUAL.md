@@ -77,7 +77,7 @@ If you ever delete the model file or change to a model you have not downloaded, 
 
 ## 3. A tour of the screen
 
-![The workspace](images/06-workspace.jpg)
+![The workspace: a hyperspectral capture with five outlined leaves](images/06-workspace.jpg)
 
 | Area | What it does |
 |---|---|
@@ -213,7 +213,7 @@ Changing display settings re-opens the current image (unsaved objects are lost �
 
 - **File format of each cut-out** — *Same as the original* (recommended), or force PNG, TIFF, NumPy or ENVI. PNG for a spectral image saves only its colour preview, not the bands.
 - **Crop** — crop to the object (default) or keep the full image size.
-- **Mask picture**, **colour preview next to spectral files** — on by default.
+- **Mask picture**, **colour preview next to spectral files** — on by default. The preview's brightness is set from the object's own pixels, so a dark leaf next to a bright white reference tile still gives a readable picture; the spectral file itself is never changed.
 - **Table of objects** — CSV, COCO JSON (for machine-learning tools) or none.
 
 ### Appearance
