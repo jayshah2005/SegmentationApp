@@ -91,3 +91,30 @@ def test_masks_are_scaled_up_to_the_original_resolution(tmp_path):
     png = cv2.imread(str(out / "a.png"), cv2.IMREAD_UNCHANGED)
     assert abs(png.shape[0] - 80) <= 2 and abs(png.shape[1] - 120) <= 2  # 40x60 at half size -> 80x120 original pixels
     assert recs[0]["bbox"][0] in (59, 60, 61) and recs[0]["areaPx"] > 9000
+
+
+def test_spectral_preview_is_readable_when_the_scene_has_something_very_bright(tmp_path):
+    from spectral.io import envi
+
+    cube = np.full((20, 20, 4), 0.05, np.float32)
+    cube[0:4, 0:4] = 5.0  # bright reference tile elsewhere in the scene
+    envi.save_image(str(tmp_path / "c.hdr"), cube, force=True, ext="img")
+    # the working picture is stretched on the whole scene, so the dark object ends up almost black
+    display = np.full((20, 20, 3), 6, np.uint8)
+    display[0:4, 0:4] = 255
+    display[8:16, 8:16, 1] = 16  # a little structure inside the object
+    mask = np.zeros((20, 20), np.uint8)
+    mask[8:16, 8:16] = 255
+    jobs = ex.plan_jobs([_obj(1, "leaf", mask)])
+    out = tmp_path / "o"
+    ex.export_objects(source=open_source(tmp_path / "c.hdr"), display_rgb=display, orientation=OrientationSettings(),
+                      cfg=ExportSettings(), jobs=jobs, out_dir=out, image_name="c.hdr")
+    prev = cv2.imread(str(out / "leaf_preview.png"), cv2.IMREAD_UNCHANGED)
+    obj_pixels = prev[:, :, :3][prev[:, :, 3] > 0]
+    assert obj_pixels.max() >= 250 and prev[:, :, 3].max() == 255  # stretched to use the full range
+    assert open_source(out / "leaf.hdr").read_cube().max() < 1  # the spectral data itself is untouched
+    # a spectral file saved as a PNG picture gets the same treatment
+    out2 = tmp_path / "o2"
+    ex.export_objects(source=open_source(tmp_path / "c.hdr"), display_rgb=display, orientation=OrientationSettings(),
+                      cfg=ExportSettings(format="png", savePreview=False), jobs=jobs, out_dir=out2, image_name="c.hdr")
+    assert cv2.imread(str(out2 / "leaf.png"), cv2.IMREAD_UNCHANGED)[:, :, :3][mask[8:16, 8:16] > 0].max() >= 250

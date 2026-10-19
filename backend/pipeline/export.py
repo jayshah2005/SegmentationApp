@@ -105,6 +105,19 @@ def _crop(arr: np.ndarray, mask: np.ndarray, crop: bool):
     return arr[ymin : ymax + 1, xmin : xmax + 1], mask[ymin : ymax + 1, xmin : xmax + 1], (xmin, ymin)
 
 
+def _auto_expose(rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Stretch contrast using only the object's own pixels, so a dark object in a scene that
+    contains something very bright (a white reference tile) still gives a readable preview."""
+    px = rgb[mask > 0]
+    if px.size == 0:
+        return rgb
+    lo, hi = np.percentile(px, [1.0, 99.0])
+    if hi - lo < 1:
+        return rgb
+    scaled = np.clip((rgb.astype(np.float32) - lo) / (hi - lo), 0.0, 1.0)
+    return (scaled * 255.0 + 0.5).astype(np.uint8)
+
+
 def _write_png_rgba(path: Path, rgb: np.ndarray, mask: np.ndarray) -> None:
     bgr = rgb[:, :, ::-1]
     alpha_val = 65535 if rgb.dtype == np.uint16 else 255
@@ -185,6 +198,8 @@ def export_objects(
             if base.shape[2] == 1:  # grayscale source
                 base = np.repeat(base, 3, axis=2)
             data, m, (x0, y0) = _crop(base[:, :, :3], mask, cfg.cropToBBox)
+            if use_display_for_png and info.kind == "cube":
+                data = _auto_expose(data, m)  # a spectral file saved as a picture: make it readable
             _write_png_rgba(out_dir / f"{job.name}.png", data, m)
             files.append(f"{job.name}.png")
         else:
@@ -197,7 +212,7 @@ def export_objects(
                 files.append(f"{job.name}.hdr")
             if cfg.savePreview:
                 prev, pm, _ = _crop(display_rgb, mask, cfg.cropToBBox)
-                _write_png_rgba(out_dir / f"{job.name}_preview.png", prev, pm)
+                _write_png_rgba(out_dir / f"{job.name}_preview.png", _auto_expose(prev, pm), pm)
                 files.append(f"{job.name}_preview.png")
 
         if cfg.saveMask:
