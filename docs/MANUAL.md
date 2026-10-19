@@ -106,7 +106,7 @@ Each thing you want to cut out is an **object**. You tell the app *where it is* 
 - **Left-click** on an object — it is outlined and becomes the *active object* (highlighted card, white label).
 - **Left-click** on a part that was missed — it is added.
 - **Right-click** (or **Shift + click**) on a part that was wrongly included — it is excluded. Excluded points are red, included points green.
-- **Click a dot** to remove that point again.
+- **Click a dot** to remove that point again. The dots of *every* object stay visible, even when the object is not selected, and clicking any of them removes it (that object becomes the active one). Removing an object's last point deletes the object.
 - **Backspace** removes the most recent point.
 
 While an object is active, clicks *refine that object*. To outline a **different** object, either press **N** (new object) or just click on the other object — if you click well away from the active object, the app starts a new one for you and tells you so.
@@ -217,7 +217,7 @@ Changing display settings re-opens the current image (unsaved objects are lost �
 - **Table of objects** — CSV, COCO JSON (for machine-learning tools) or none.
 
 ### Appearance
-**Highlight colour** and **strength** control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files, so they apply instantly and are remembered in this browser — there is nothing to save.
+**Highlight colour** and **opacity** (30% by default; lower it to see more of the picture underneath) control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files, so they apply instantly and are remembered in this browser — there is nothing to save.
 
 ### Shortcuts
 The list in [section 9](#9-keyboard-shortcuts).
