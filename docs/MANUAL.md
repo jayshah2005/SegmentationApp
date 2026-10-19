@@ -135,7 +135,7 @@ Click **Fine-tune** on a card for a close-up. Everything outside the object is d
 
 ### Rotating one image
 
-If an image is sideways or upside down, use the two arrow buttons at the top-right of the picture (or press **R** to turn it right and **Shift + R** to turn it left). Objects, points and boxes you already made turn with the picture. The choice is remembered for that image only, even after you close the app, and a **Rotated 90° · reset** button appears so you can undo it. Saved cut-outs use the orientation you see.
+If an image is sideways or upside down, use the two arrow buttons at the top-right of the picture (or press **R** to turn it right and **Shift + R** to turn it left). Objects, points and boxes you already made turn with the picture. The choice is remembered for that image only, even after you close the app, and a **Rotated 90° · reset** button appears under the arrows so you can undo it. Saved cut-outs use the orientation you see.
 
 To rotate *every* image the same way, use Settings → Image display → *Rotate every image*. The two combine: the per-image rotation is added on top of the setting.
 
