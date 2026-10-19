@@ -31,7 +31,7 @@ export type ConfirmRequest = {
 
 // ---------- per-browser appearance (not part of the exported data) ----------
 
-type Appearance = { maskColor: string; maskOpacity: number; exposure: number }
+export type Appearance = { maskColor: string; maskOpacity: number; exposure: number }
 const APPEARANCE_KEY = 'segtool.appearance'
 const DEFAULT_APPEARANCE: Appearance = { maskColor: '#3d9a6a', maskOpacity: 0.3, exposure: 1 }
 
@@ -102,6 +102,8 @@ type WorkspaceState = {
   confirm: (req: Omit<ConfirmRequest, 'resolve'>) => Promise<boolean>
   answerConfirm: (ok: boolean) => void
 
+  /** Apply several appearance values at once (used by the Settings dialog's Save). */
+  setAppearance: (a: Appearance) => void
   setMaskColor: (hex: string) => void
   setMaskOpacity: (v: number) => void
   setExposure: (v: number) => void
@@ -222,6 +224,15 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
     req?.resolve(ok)
   },
 
+  setAppearance: (a) => {
+    const appearance = {
+      maskColor: a.maskColor,
+      maskOpacity: clamp(a.maskOpacity, 0.05, 1),
+      exposure: clamp(Math.round(a.exposure * 20) / 20, 0.5, 3),
+    }
+    saveAppearance(appearance)
+    set({ appearance })
+  },
   setMaskColor: (hex) => {
     const appearance = { ...get().appearance, maskColor: hex }
     saveAppearance(appearance)

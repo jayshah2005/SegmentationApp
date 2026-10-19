@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ExportFormat, MetadataFormat, Settings } from '../api/client'
 import { useEditor } from '../state/editor'
-import { useWorkspace, type SettingsTab } from '../state/workspace'
+import { useWorkspace, type Appearance, type SettingsTab } from '../state/workspace'
 import { EnginePanel } from './EnginePanel'
 import { FolderField } from './FolderField'
 import { Modal } from './Modal'
@@ -46,16 +46,21 @@ export function SettingsModal() {
   const closeSettings = useWorkspace((s) => s.closeSettings)
   const saveSettings = useWorkspace((s) => s.saveSettings)
   const appearance = useWorkspace((s) => s.appearance)
+  const setAppearance = useWorkspace((s) => s.setAppearance)
   const toast = useWorkspace((s) => s.toast)
   const confirm = useWorkspace((s) => s.confirm)
   const image = useEditor((s) => s.image)
 
   const [draft, setDraft] = useState<Settings>(settings)
+  // Appearance is edited as a draft too: nothing changes on screen until Save changes.
+  const [appDraft, setAppDraft] = useState<Appearance>(appearance)
   const [saving, setSaving] = useState(false)
 
   // Only the fields this dialog saves (model/device save immediately in the Model & GPU tab).
   const editable = (x: Settings) => [x.inputDir, x.outputDir, x.recursive, x.display, x.orientation, x.export]
-  const changed = useMemo(() => JSON.stringify(editable(draft)) !== JSON.stringify(editable(settings)), [draft, settings])
+  const serverChanged = useMemo(() => JSON.stringify(editable(draft)) !== JSON.stringify(editable(settings)), [draft, settings])
+  const appearanceChanged = useMemo(() => JSON.stringify(appDraft) !== JSON.stringify(appearance), [appDraft, appearance])
+  const changed = serverChanged || appearanceChanged
   const displayChanged = useMemo(
     () => JSON.stringify([draft.display, draft.orientation]) !== JSON.stringify([settings.display, settings.orientation]),
     [draft, settings],
@@ -67,7 +72,7 @@ export function SettingsModal() {
   const save = async () => {
     setSaving(true)
     try {
-      const reopen = displayChanged && image
+      const reopen = serverChanged && displayChanged && image
       if (reopen && useEditor.getState().objects.length) {
         const ok = await confirm({
           title: 'Re-open this image?',
@@ -77,14 +82,17 @@ export function SettingsModal() {
         })
         if (!ok) return
       }
-      await saveSettings({
-        inputDir: draft.inputDir,
-        outputDir: draft.outputDir,
-        recursive: draft.recursive,
-        display: draft.display,
-        orientation: draft.orientation,
-        export: draft.export,
-      })
+      if (serverChanged) {
+        await saveSettings({
+          inputDir: draft.inputDir,
+          outputDir: draft.outputDir,
+          recursive: draft.recursive,
+          display: draft.display,
+          orientation: draft.orientation,
+          export: draft.export,
+        })
+      }
+      if (appearanceChanged) setAppearance(appDraft)
       toast('success', 'Settings saved.')
       if (reopen) await useEditor.getState().openSample(image.sampleKey, { force: true })
       closeSettings()
@@ -255,23 +263,23 @@ export function SettingsModal() {
 
           {tab === 'appearance' && (
             <>
-              <p className="muted">These only change how things look on your screen, never the saved files. They apply instantly and are remembered in this browser, so there is nothing to save here.</p>
+              <p className="muted">These only change how things look on your screen, never the saved files. Click Save changes to apply them; they are remembered in this browser.</p>
               <label className="field">
                 <span>Highlight colour</span>
-                <input type="color" value={appearance.maskColor} onChange={(e) => useWorkspace.getState().setMaskColor(e.target.value)} />
+                <input type="color" value={appDraft.maskColor} onChange={(e) => setAppDraft((d) => ({ ...d, maskColor: e.target.value }))} />
               </label>
               <p className="muted">The tint drawn over each outlined object. The first object uses this colour; the others shift its hue so neighbours are easy to tell apart.</p>
               <label className="slider-field">
                 <span>
-                  Highlight opacity <strong>{Math.round(appearance.maskOpacity * 100)}%</strong>
+                  Highlight opacity <strong>{Math.round(appDraft.maskOpacity * 100)}%</strong>
                 </span>
-                <input type="range" min={0.05} max={1} step={0.05} aria-label="Highlight opacity" value={appearance.maskOpacity} onChange={(e) => useWorkspace.getState().setMaskOpacity(Number(e.target.value))} />
+                <input type="range" min={0.05} max={1} step={0.05} aria-label="Highlight opacity" value={appDraft.maskOpacity} onChange={(e) => setAppDraft((d) => ({ ...d, maskOpacity: Number(e.target.value) }))} />
               </label>
               <label className="slider-field">
                 <span>
-                  Picture brightness <strong>{appearance.exposure.toFixed(2)}×</strong>
+                  Picture brightness <strong>{appDraft.exposure.toFixed(2)}×</strong>
                 </span>
-                <input type="range" min={0.5} max={3} step={0.05} value={appearance.exposure} onChange={(e) => useWorkspace.getState().setExposure(Number(e.target.value))} />
+                <input type="range" min={0.5} max={3} step={0.05} aria-label="Picture brightness" value={appDraft.exposure} onChange={(e) => setAppDraft((d) => ({ ...d, exposure: Number(e.target.value) }))} />
               </label>
             </>
           )}
