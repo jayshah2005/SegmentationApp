@@ -494,15 +494,17 @@ export function SegmentationCanvas({ region: regionProp, focusId = null, classNa
         </div>
       )}
       {image && focusId == null && !loading && (
-        <div className="canvas-rotate" role="group" aria-label="Rotate this image">
-          <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(270)} title="Rotate this image left (Shift+R)" aria-label="Rotate left">
-            <IconRotateLeft />
-          </button>
-          <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(90)} title="Rotate this image right (R)" aria-label="Rotate right">
-            <IconRotateRight />
-          </button>
+        <div className="canvas-rotate-wrap">
+          <div className="canvas-rotate" role="group" aria-label="Rotate this image">
+            <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(270)} title="Rotate this image left (Shift+R)" aria-label="Rotate left">
+              <IconRotateLeft />
+            </button>
+            <button type="button" className="icon-btn" disabled={busy} onClick={() => void rotate(90)} title="Rotate this image right (R)" aria-label="Rotate right">
+              <IconRotateRight />
+            </button>
+          </div>
           {image.rotation !== 0 && (
-            <button type="button" className="chip" disabled={busy} onClick={() => void rotate((360 - image.rotation) as 90 | 180 | 270)} title="Undo this image's rotation">
+            <button type="button" className="chip rotated-chip" disabled={busy} onClick={() => void rotate((360 - image.rotation) as 90 | 180 | 270)} title="Undo this image's rotation">
               Rotated {image.rotation}° · reset
             </button>
           )}
