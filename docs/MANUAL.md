@@ -186,7 +186,7 @@ Cut-outs are always made from the **original-size** image even when the app show
 
 ## 6. Settings reference
 
-Open with the ⚙ button. Changes in *Folders*, *Image display* and *Export* take effect when you click **Save changes**; *Model & GPU* and *Appearance* apply immediately.
+Open with the ⚙ button. Changes in *Folders*, *Image display*, *Export* and *Appearance* take effect only when you click **Save changes** (**Cancel** discards them). *Model & GPU* is the exception: choosing a model or device, and installing things, happens immediately.
 
 ### Folders
 Input folder, output folder, and whether to include sub-folders. Changing the input folder re-scans for images.
@@ -217,7 +217,7 @@ Changing display settings re-opens the current image (unsaved objects are lost �
 - **Table of objects** — CSV, COCO JSON (for machine-learning tools) or none.
 
 ### Appearance
-**Highlight colour** and **opacity** (30% by default; lower it to see more of the picture underneath) control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files, so they apply instantly and are remembered in this browser — there is nothing to save.
+**Highlight colour** and **opacity** (30% by default; lower it to see more of the picture underneath) control the coloured tint drawn over each outlined object; the first object uses your colour and the others shift its hue so neighbouring objects are easy to tell apart. **Picture brightness** brightens or darkens the picture. These only change how things look on your screen and never the saved files. Like the other tabs they apply when you click **Save changes**, and are then remembered in this browser. (The **Brightness** slider in the top bar is a quick live control for the same brightness.)
 
 ### Shortcuts
 The list in [section 9](#9-keyboard-shortcuts).
