@@ -77,7 +77,7 @@ If you ever delete the model file or change to a model you have not downloaded, 
 
 ## 3. A tour of the screen
 
-![The workspace: a hyperspectral capture with five outlined leaves](images/06-workspace.jpg)
+![The workspace: a hyperspectral capture with five outlined leaves](images/Segmentation%20App.png)
 
 | Area | What it does |
 |---|---|
